@@ -4,7 +4,7 @@ Paint textures on Terrains, then use this tool to generate coherent meshes on se
 ## Steps:
 1) Add this to your project
 2) Create an Empty object and attach this script, MeshRenderer and MeshFilter components to it.
-3) Select the Terrain, material, Texture number 0 indexed from the terrain and the generated asset's name if you want.
+3) Select the Terrain, material, Texture number(0-indexed)  from the terrain and the generated asset's name if you want.
 4) Once done, run the game!
 
 The Asset will be saved in the "Assets/MyStuff/Models" directory.
