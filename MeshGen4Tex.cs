@@ -7,25 +7,56 @@ public class MeshGen4Tex : MonoBehaviour
 {
     public Terrain curTer;
     public Material mat;
-    public int TextureNumber;
+    public int[] TextureNumber;
     public string AssetName = "RoadGenDefault";
+    TerrainData td;
+    int aMapSize;
+    Vector3 tSize;
+    Vector3 tPos;
+    int sizeX; 
+    int sizeZ;
+
+    int[,] indexMap;
+    List<Vector3> vertices;
+    List<int> triangles;
+    Texture2D aMapTex;
+
+    Mesh mesh;
+
     
     void Start()
     {
         if (curTer == null) return;
 
-        TerrainData td = curTer.terrainData;
-        Texture2D aMapTex = td.alphamapTextures[(int)TextureNumber/4];
-        int aMapSize = td.alphamapResolution;
-        Vector3 tSize = td.size;
-        Vector3 tPos = curTer.transform.position;
+        td = curTer.terrainData;
+        aMapSize = td.alphamapResolution;
+        tSize = td.size;
+        tPos = curTer.transform.position;
+        sizeX = (int)tSize.x;
+        sizeZ = (int)tSize.z;
+        vertices = new List<Vector3>();
+        triangles = new List<int>();
+        indexMap = new int[sizeX, sizeZ]; 
+        for (int x = 0; x < sizeX; x++)
+        {
+            for (int z = 0; z < sizeZ; z++)
+            {
+                indexMap[x, z] = -1;
+            }
+        }
 
-        int sizeX = (int)tSize.x;
-        int sizeZ = (int)tSize.z;
 
-        int[,] indexMap = new int[sizeX, sizeZ];
-        List<Vector3> vertices = new List<Vector3>();
-        List<int> triangles = new List<int>();
+        foreach(int t in TextureNumber){
+            addVerts(t);
+        }
+
+        DrawShape();
+        SaveAsset();
+
+    }
+
+    void addVerts(int TextureNumber){
+        aMapTex = td.alphamapTextures[(int)TextureNumber/4];
 
         Color[] pixels = aMapTex.GetPixels();
 
@@ -33,7 +64,6 @@ public class MeshGen4Tex : MonoBehaviour
         {
             for (int z = 0; z < sizeZ; z++)
             {
-                indexMap[x, z] = -1; 
 
                 float normX = (float)x / sizeX;
                 float normZ = (float)z / sizeZ;
@@ -54,7 +84,9 @@ public class MeshGen4Tex : MonoBehaviour
                 }
             }
         }
+    }
 
+    void DrawShape(){
         for (int x = 0; x < sizeX - 1; x++)
         {
             for (int z = 0; z < sizeZ - 1; z++)
@@ -76,16 +108,16 @@ public class MeshGen4Tex : MonoBehaviour
                 }
             }
         }
-
-        Mesh mesh = new Mesh();
+        mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals(); 
         GetComponent<MeshFilter>().mesh = mesh;
         GetComponent<MeshRenderer>().material = mat;
+    }
 
-
+    void SaveAsset(){
         #if UNITY_EDITOR
         AssetDatabase.CreateAsset(mesh, "Assets/MyStuff/Models/"+AssetName+".asset");
         AssetDatabase.SaveAssets();
